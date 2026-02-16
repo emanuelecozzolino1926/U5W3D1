@@ -38,7 +38,7 @@ public class DipendentiService {
 			throw new BadRequestException("L'email " + dipendente.getEmail() + " e' gia' in uso!");
 		});
 		//Creo il nuovo dipendente con avatar auto-generato
-		Dipendente newDipendente = new Dipendente(payload.username(), payload.nome(), payload.cognome(), payload.email());
+		Dipendente newDipendente = new Dipendente(payload.username(), payload.nome(), payload.cognome(), payload.email(), payload.password());
 		newDipendente.setImmagineProfilo("https://ui-avatars.com/api?name=" + payload.nome() + "+" + payload.cognome());
 		//Salvo
 		Dipendente savedDipendente = this.dipendentiRepository.save(newDipendente);
@@ -78,6 +78,10 @@ public class DipendentiService {
 		log.info("Il dipendente con id " + modifiedDipendente.getId() + " e' stato modificato correttamente");
 		//Ritorno il dipendente modificato
 		return modifiedDipendente;
+	}
+
+	public Dipendente findByEmail(String email) {
+		return this.dipendentiRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("Il dipendente con email " + email + " non e' stato trovato!"));
 	}
 
 	public void findByIdAndDelete(UUID dipendenteId) {

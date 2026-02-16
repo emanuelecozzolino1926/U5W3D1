@@ -25,17 +25,6 @@ public class DipendentiController {
 		this.dipendentiService = dipendentiService;
 	}
 
-	// POST http://localhost:3001/dipendenti
-	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public Dipendente createDipendente(@RequestBody @Validated DipendenteDTO payload, BindingResult validationResult) {
-		if (validationResult.hasErrors()) {
-			List<String> errorsList = validationResult.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).toList();
-			throw new ValidationException(errorsList);
-		}
-		return this.dipendentiService.save(payload);
-	}
-
 	// GET http://localhost:3001/dipendenti
 	@GetMapping
 	public Page<Dipendente> findAll(@RequestParam(defaultValue = "0") int page,
