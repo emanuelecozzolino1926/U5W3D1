@@ -8,6 +8,7 @@ import emanueleCozzolino.u5w2d5.services.ViaggiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +26,10 @@ public class ViaggiController {
 		this.viaggiService = viaggiService;
 	}
 
-	// POST http://localhost:3001/viaggi
+	// POST http://localhost:3001/viaggi (solo ADMIN/SUPERADMIN)
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
+	@PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
 	public Viaggio createViaggio(@RequestBody @Validated ViaggioDTO payload, BindingResult validationResult) {
 		if (validationResult.hasErrors()) {
 			List<String> errorsList = validationResult.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).toList();
@@ -51,8 +53,9 @@ public class ViaggiController {
 		return this.viaggiService.findById(viaggioId);
 	}
 
-	// PUT http://localhost:3001/viaggi/{viaggioId}
+	// PUT http://localhost:3001/viaggi/{viaggioId} (solo ADMIN/SUPERADMIN)
 	@PutMapping("/{viaggioId}")
+	@PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
 	public Viaggio findByIdAndUpdate(@PathVariable UUID viaggioId, @RequestBody @Validated ViaggioDTO payload, BindingResult validationResult) {
 		if (validationResult.hasErrors()) {
 			List<String> errorsList = validationResult.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).toList();
@@ -61,15 +64,17 @@ public class ViaggiController {
 		return this.viaggiService.findByIdAndUpdate(viaggioId, payload);
 	}
 
-	// DELETE http://localhost:3001/viaggi/{viaggioId}
+	// DELETE http://localhost:3001/viaggi/{viaggioId} (solo ADMIN/SUPERADMIN)
 	@DeleteMapping("/{viaggioId}")
+	@PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void findByIdAndDelete(@PathVariable UUID viaggioId) {
 		this.viaggiService.findByIdAndDelete(viaggioId);
 	}
 
-	// PATCH http://localhost:3001/viaggi/{viaggioId}/stato
+	// PATCH http://localhost:3001/viaggi/{viaggioId}/stato (solo ADMIN/SUPERADMIN)
 	@PatchMapping("/{viaggioId}/stato")
+	@PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
 	public Viaggio findByIdAndUpdateStato(@PathVariable UUID viaggioId, @RequestParam StatoViaggio stato) {
 		return this.viaggiService.findByIdAndUpdateStato(viaggioId, stato);
 	}

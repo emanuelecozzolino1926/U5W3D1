@@ -7,6 +7,8 @@ import emanueleCozzolino.u5w2d5.services.DipendentiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -34,14 +36,39 @@ public class DipendentiController {
 		return this.dipendentiService.findAll(page, size, orderBy, sortCriteria);
 	}
 
+	// GET http://localhost:3001/dipendenti/me
+	@GetMapping("/me")
+	public Dipendente getProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente) {
+		return currentAuthenticatedDipendente;
+	}
+
+	// PUT http://localhost:3001/dipendenti/me
+	@PutMapping("/me")
+	public Dipendente updateProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente,
+									@RequestBody @Validated DipendenteDTO payload, BindingResult validationResult) {
+		if (validationResult.hasErrors()) {
+			List<String> errorsList = validationResult.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).toList();
+			throw new ValidationException(errorsList);
+		}
+		return this.dipendentiService.findByIdAndUpdate(currentAuthenticatedDipendente.getId(), payload);
+	}
+
+	// DELETE http://localhost:3001/dipendenti/me
+	@DeleteMapping("/me")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void deleteProfile(@AuthenticationPrincipal Dipendente currentAuthenticatedDipendente) {
+		this.dipendentiService.findByIdAndDelete(currentAuthenticatedDipendente.getId());
+	}
+
 	// GET http://localhost:3001/dipendenti/{dipendenteId}
 	@GetMapping("/{dipendenteId}")
 	public Dipendente findById(@PathVariable UUID dipendenteId) {
 		return this.dipendentiService.findById(dipendenteId);
 	}
 
-	// PUT http://localhost:3001/dipendenti/{dipendenteId}
+	// PUT http://localhost:3001/dipendenti/{dipendenteId} (solo ADMIN/SUPERADMIN)
 	@PutMapping("/{dipendenteId}")
+	@PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
 	public Dipendente findByIdAndUpdate(@PathVariable UUID dipendenteId, @RequestBody @Validated DipendenteDTO payload, BindingResult validationResult) {
 		if (validationResult.hasErrors()) {
 			List<String> errorsList = validationResult.getFieldErrors().stream().map(fieldError -> fieldError.getDefaultMessage()).toList();
@@ -50,8 +77,9 @@ public class DipendentiController {
 		return this.dipendentiService.findByIdAndUpdate(dipendenteId, payload);
 	}
 
-	// DELETE http://localhost:3001/dipendenti/{dipendenteId}
+	// DELETE http://localhost:3001/dipendenti/{dipendenteId} (solo ADMIN/SUPERADMIN)
 	@DeleteMapping("/{dipendenteId}")
+	@PreAuthorize("hasAnyAuthority('SUPERADMIN', 'ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void findByIdAndDelete(@PathVariable UUID dipendenteId) {
 		this.dipendentiService.findByIdAndDelete(dipendenteId);
